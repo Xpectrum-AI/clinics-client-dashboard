@@ -1,0 +1,40 @@
+# Local Netlify folder
+.netlify
+
+# Environment variables — never commit at any depth
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Secret-y files that should never be in source control
+secrets.json
+credentials.json
+service-account*.json
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+*.priv
+
+# Common dotfiles that can carry tokens
+.npmrc
+.netrc
+.aws/
+.gnupg/
+
+# IDE/editor + OS junk that occasionally embeds machine paths or tokens
+.vscode/settings.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Node + build (also covered by inner .gitignore but safe to repeat at root)
+node_modules
+dist
+dist-ssr
+*.local
