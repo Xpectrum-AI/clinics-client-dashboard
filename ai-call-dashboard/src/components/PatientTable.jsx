@@ -1,4 +1,12 @@
-export default function PatientTable() {
+import { formatDateTime } from "../lib/dates"
+
+export default function PatientTable({ patients = [] }) {
+  if (patients.length === 0) {
+    return (
+      <p className="text-gray-500 py-4">No patients to show.</p>
+    )
+  }
+
   return (
     <table className="w-full">
 
@@ -12,21 +20,14 @@ export default function PatientTable() {
       </thead>
 
       <tbody>
-
-        <tr className="border-b">
-          <td className="py-4">Rahul Sharma</td>
-          <td>9876543210</td>
-          <td>Extraction</td>
-          <td>Today 2:30 PM</td>
-        </tr>
-
-        <tr className="border-b">
-          <td className="py-4">Priya Verma</td>
-          <td>9876543211</td>
-          <td>Implant</td>
-          <td>Tomorrow 11 AM</td>
-        </tr>
-
+        {patients.map((p) => (
+          <tr key={p._id} className="border-b">
+            <td className="py-4">{p.name || "—"}</td>
+            <td>{p.phone || "—"}</td>
+            <td>{p.visit_type || "—"}</td>
+            <td>{formatDateTime(p.scheduled_at)}</td>
+          </tr>
+        ))}
       </tbody>
 
     </table>

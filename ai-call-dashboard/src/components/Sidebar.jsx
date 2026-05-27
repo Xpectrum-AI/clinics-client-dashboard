@@ -1,9 +1,15 @@
+import { NavLink } from "react-router-dom"
 import {
   LayoutDashboard,
   Users,
   Phone,
-  Settings
 } from "lucide-react"
+
+const NAV = [
+  { to: "/",         label: "Dashboard", Icon: LayoutDashboard },
+  { to: "/patients", label: "Patients",  Icon: Users },
+  { to: "/calls",    label: "Calls",     Icon: Phone },
+]
 
 export default function Sidebar() {
   return (
@@ -14,27 +20,21 @@ export default function Sidebar() {
       </h1>
 
       <nav className="space-y-3">
-
-        <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-100">
-          <LayoutDashboard size={20} />
-          Dashboard
-        </div>
-
-        <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 cursor-pointer">
-          <Users size={20} />
-          Patients
-        </div>
-
-        <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 cursor-pointer">
-          <Phone size={20} />
-          Calls
-        </div>
-
-        <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 cursor-pointer">
-          <Settings size={20} />
-          Settings
-        </div>
-
+        {NAV.map(({ to, label, Icon }) => (
+          <NavLink
+            key={to}
+            to={to}
+            end={to === "/"}
+            className={({ isActive }) =>
+              `flex items-center gap-3 p-3 rounded-xl cursor-pointer ${
+                isActive ? "bg-blue-100" : "hover:bg-gray-100"
+              }`
+            }
+          >
+            <Icon size={20} />
+            {label}
+          </NavLink>
+        ))}
       </nav>
     </div>
   )

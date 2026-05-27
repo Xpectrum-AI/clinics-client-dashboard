@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { formatTime, scenarioFromPatient } from "../lib/dates"
 
 const SCENARIOS = [
   { value: "confirm",    label: "Confirm Appointment" },
@@ -10,23 +11,27 @@ const SCENARIOS = [
   { value: "lapsed",     label: "Lapsed Patient" },
 ]
 
-export default function CallCard() {
-  const [scenario, setScenario] = useState("confirm")
+export default function CallCard({ patient }) {
+  const [scenario, setScenario] = useState(
+    () => scenarioFromPatient(patient)
+  )
+
+  if (!patient) return null
 
   return (
     <div className="border rounded-2xl p-4 flex justify-between items-center">
 
       <div>
         <h3 className="font-semibold text-lg">
-          Rahul Sharma
+          {patient.name || "Unknown"}
         </h3>
 
         <p className="text-gray-500">
-          Extraction Follow-Up
+          {patient.visit_type || "—"}
         </p>
 
         <p className="text-sm text-blue-600 mt-1">
-          2:30 PM
+          {formatTime(patient.scheduled_at)}
         </p>
       </div>
 
