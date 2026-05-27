@@ -1,0 +1,12 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "api"
+
+# SPA fallback so React Router client-side routes (e.g. /patients, /calls)
+# work on direct visits and page refresh. Function routes are matched first
+# by Netlify, so this does NOT swallow /api/*.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

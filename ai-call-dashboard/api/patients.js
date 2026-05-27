@@ -1,6 +1,6 @@
 import { getDb } from "./_lib/mongo.js"
 
-export default async function handler(req, res) {
+export default async () => {
   try {
     const db = await getDb()
     const docs = await db
@@ -21,9 +21,11 @@ export default async function handler(req, res) {
       .toArray()
 
     const cleaned = docs.map((d) => ({ ...d, _id: d._id.toString() }))
-    res.status(200).json(cleaned)
+    return Response.json(cleaned)
   } catch (err) {
     console.error("[api/patients] error:", err)
-    res.status(500).json({ error: err.message })
+    return Response.json({ error: err.message }, { status: 500 })
   }
 }
+
+export const config = { path: "/api/patients" }

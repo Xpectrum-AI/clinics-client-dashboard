@@ -1,17 +1,36 @@
-// Local dev only. Runs the same /api handlers as a small Express server.
-// Vite proxies /api/* to this server (see vite.config.js).
+// Local dev only. Wraps the Netlify-style handlers in /api as Express routes
+// so `npm run dev` works without the Netlify CLI. Vite proxies /api/* here.
 
 import express from "express"
-import patientsHandler from "./api/patients.js"
-import appointmentsHandler from "./api/appointments.js"
-import callsHandler from "./api/calls.js"
+import patientsFn from "./api/patients.js"
+import appointmentsFn from "./api/appointments.js"
+import callsFn from "./api/calls.js"
 
 const app = express()
 app.use(express.json())
 
-app.all("/api/patients", patientsHandler)
-app.all("/api/appointments", appointmentsHandler)
-app.all("/api/calls", callsHandler)
+function adapt(fn) {
+  return async (req, res) => {
+    try {
+      const url = `http://${req.headers.host || "localhost"}${req.originalUrl}`
+      const request = new Request(url, {
+        method: req.method,
+        headers: req.headers,
+      })
+      const response = await fn(request, {})
+      res.status(response.status)
+      response.headers.forEach((v, k) => res.setHeader(k, v))
+      res.send(await response.text())
+    } catch (err) {
+      console.error("[adapter] error:", err)
+      res.status(500).json({ error: err.message })
+    }
+  }
+}
+
+app.all("/api/patients", adapt(patientsFn))
+app.all("/api/appointments", adapt(appointmentsFn))
+app.all("/api/calls", adapt(callsFn))
 
 const port = process.env.PORT || 3001
 app.listen(port, () => {

@@ -1,15 +1,20 @@
 import { getDb } from "./_lib/mongo.js"
 
-export default async function handler(req, res) {
+export default async () => {
   try {
     const db = await getDb()
     const docs = await db
       .collection("appointments")
       .find({})
-      .limit(100)
+      .limit(200)
       .toArray()
-    res.status(200).json(docs)
+
+    const cleaned = docs.map((d) => ({ ...d, _id: d._id.toString() }))
+    return Response.json(cleaned)
   } catch (err) {
-    res.status(500).json({ error: err.message })
+    console.error("[api/appointments] error:", err)
+    return Response.json({ error: err.message }, { status: 500 })
   }
 }
+
+export const config = { path: "/api/appointments" }
