@@ -1,4 +1,5 @@
 [build]
+  base = "ai-call-dashboard"
   command = "npm run build"
   publish = "dist"
   functions = "api"
