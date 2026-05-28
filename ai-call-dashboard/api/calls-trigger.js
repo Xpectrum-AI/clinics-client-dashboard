@@ -21,29 +21,24 @@ export default async (req) => {
       return Response.json({ error: "Call not found" }, { status: 404 })
     }
 
-    const apiKey = process.env.XPECTRUM_API_KEY
-    if (apiKey) {
-      try {
-        const wf = await fetch("https://cloud-v2.xpectrum.co/v1/workflows/run", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            inputs: { call_id },
-            response_mode: "streaming",
-            user: "abc-123",
-          }),
-        })
-        if (!wf.ok) {
-          console.error("[api/calls/trigger] workflow failed:", await wf.text())
-        }
-      } catch (e) {
-        console.error("[api/calls/trigger] workflow error:", e)
+    try {
+      const wf = await fetch("https://cloud-v2.xpectrum.co/v1/workflows/run", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer app-fhQQpFmSwQtmwzwKIVf7PS2s",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          inputs: { call_id },
+          response_mode: "streaming",
+          user: "abc-123",
+        }),
+      })
+      if (!wf.ok) {
+        console.error("[api/calls/trigger] workflow failed:", await wf.text())
       }
-    } else {
-      console.warn("[api/calls/trigger] XPECTRUM_API_KEY not set; skipped workflow")
+    } catch (e) {
+      console.error("[api/calls/trigger] workflow error:", e)
     }
 
     return Response.json({ success: true, message: "Call triggered", call_id })
