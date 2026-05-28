@@ -5,8 +5,8 @@ import express from "express"
 import patientsFn from "./api/patients.js"
 import appointmentsFn from "./api/appointments.js"
 import callsFn from "./api/calls.js"
-import callsCreateFn from "./api/calls/create.js"
-import callsTriggerFn from "./api/calls/trigger.js"
+import callsCreateFn from "./api/calls-create.js"
+import callsTriggerFn from "./api/calls-trigger.js"
 
 const app = express()
 app.use(express.json())

@@ -1,4 +1,4 @@
-import { getDb } from "../_lib/mongo.js"
+import { getDb } from "./_lib/mongo.js"
 
 export default async (req) => {
   if (req.method !== "POST") {
@@ -16,22 +16,23 @@ export default async (req) => {
       next_run_at,
       metadata,
       status = "scheduled",
-      retry_count = 0
+      retry_count = 0,
     } = body
 
-    // Validate required fields
     if (!patient_id || !appointment_id || !type || !purpose || !scheduled_for) {
       return Response.json(
-        { error: "Missing required fields: patient_id, appointment_id, type, purpose, scheduled_for" },
+        {
+          error:
+            "Missing required fields: patient_id, appointment_id, type, purpose, scheduled_for",
+        },
         { status: 400 }
       )
     }
 
     const db = await getDb()
-
-    // Generate a unique call_id
     const callCount = await db.collection("calls").countDocuments()
-    const call_id = `CAL_${(callCount + 1001).toString()}`
+    const call_id = `CAL_${callCount + 1001}`
+    const now = new Date().toISOString()
 
     const newCall = {
       call_id,
@@ -45,16 +46,12 @@ export default async (req) => {
       retry_count,
       last_attempt_at: null,
       metadata: metadata || {},
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      created_at: now,
+      updated_at: now,
     }
 
     const result = await db.collection("calls").insertOne(newCall)
-
-    return Response.json({
-      ...newCall,
-      _id: result.insertedId.toString()
-    })
+    return Response.json({ ...newCall, _id: result.insertedId.toString() }, { status: 201 })
   } catch (err) {
     console.error("[api/calls/create] error:", err)
     return Response.json({ error: err.message }, { status: 500 })
