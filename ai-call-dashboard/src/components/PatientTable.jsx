@@ -13,7 +13,8 @@ export default function PatientTable({ patients = [] }) {
 
   return (
     <>
-      <table className="w-full">
+      <div className="overflow-x-auto">
+      <table className="w-full min-w-[640px]">
 
         <thead>
           <tr className="text-left border-b">
@@ -48,6 +49,7 @@ export default function PatientTable({ patients = [] }) {
         </tbody>
 
       </table>
+      </div>
 
       <PatientModal
         open={Boolean(editing)}

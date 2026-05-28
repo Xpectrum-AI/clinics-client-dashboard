@@ -35,7 +35,7 @@ export default function Dashboard() {
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard title="Patients" value={isLoading ? "…" : totalPatients} />
         <StatCard title="Today's Calls" value={isLoading ? "…" : todaysCalls.length} />
         <StatCard title="Pending" value={isLoading ? "…" : pending} />
