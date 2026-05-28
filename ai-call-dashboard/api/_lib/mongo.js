@@ -1,8 +1,8 @@
 import { MongoClient } from "mongodb"
 
 export async function getDb() {
-  const uri = process.env.MONGODB_URI || "mongodb+srv://mongo_access:3gfaAKMQsCwEjIXG@clusterprod.jp8u9.mongodb.net/?appName=ClusterProd"
-  const dbName = process.env.MONGODB_DB || "clinics"
+  const uri = process.env.MONGODB_URI
+  const dbName = process.env.MONGODB_DB
   if (!uri) throw new Error("Missing MONGODB_URI env var")
   if (!dbName) throw new Error("Missing MONGODB_DB env var")
 
