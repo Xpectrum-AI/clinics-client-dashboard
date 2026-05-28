@@ -1,9 +1,12 @@
+import { useOutletContext } from "react-router-dom"
 import PatientTable from "../components/PatientTable"
+import { matchesSearch } from "../lib/search"
 import { useApi } from "../hooks/useApi"
 
 export default function Patients() {
+  const { search } = useOutletContext()
   const { data, loading, error } = useApi("/api/patients")
-  const patients = data ?? []
+  const patients = (data ?? []).filter((p) => matchesSearch(p, search))
 
   return (
     <div className="bg-white rounded-2xl p-5 shadow-sm">

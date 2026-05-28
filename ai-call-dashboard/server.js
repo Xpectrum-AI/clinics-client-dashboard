@@ -13,9 +13,11 @@ function adapt(fn) {
   return async (req, res) => {
     try {
       const url = `http://${req.headers.host || "localhost"}${req.originalUrl}`
+      const hasBody = !["GET", "HEAD"].includes(req.method)
       const request = new Request(url, {
         method: req.method,
-        headers: req.headers,
+        headers: { "content-type": "application/json" },
+        body: hasBody ? JSON.stringify(req.body ?? {}) : undefined,
       })
       const response = await fn(request, {})
       res.status(response.status)

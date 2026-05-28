@@ -34,24 +34,3 @@ export function formatDateTime(iso) {
     return `Tomorrow ${time}`
   return `${d.toLocaleDateString([], { day: "numeric", month: "short" })} ${time}`
 }
-
-export function scenarioFromPatient(patient) {
-  const status = patient?.status
-  const cb = patient?.latest_response?.callback_requested
-  switch (status) {
-    case "booked":
-      return "confirm"
-    case "reschedule_requested":
-      return "reschedule"
-    case "cancelled":
-      return "cancel"
-    case "no_show":
-      return "noshow"
-    case "completed":
-      return cb ? "callback" : "followup"
-    case "inactive":
-      return "lapsed"
-    default:
-      return "confirm"
-  }
-}
