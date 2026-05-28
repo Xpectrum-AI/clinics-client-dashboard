@@ -91,7 +91,7 @@ export default function PatientModal({ open, onClose, onSaved, patient }) {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl p-6 w-full max-w-md shadow-lg max-h-[90vh] overflow-auto"
+        className="bg-white rounded-2xl p-6 w-full max-w-md shadow-lg max-h-[90vh] overflow-y-auto overflow-x-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-xl font-semibold mb-4">
@@ -142,10 +142,10 @@ export default function PatientModal({ open, onClose, onSaved, patient }) {
             </div>
             <div>
               <label className="text-sm text-gray-600">Preferred call</label>
-              <div className="flex items-center gap-1">
-                <input type="time" className={inputCls} value={form.call_from} onChange={set("call_from")} />
-                <span className="text-gray-400">–</span>
-                <input type="time" className={inputCls} value={form.call_to} onChange={set("call_to")} />
+              <div className="flex items-center gap-1 min-w-0">
+                <input type="time" className="border rounded-xl px-2 py-2 w-full min-w-0 focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.call_from} onChange={set("call_from")} />
+                <span className="text-gray-400 flex-shrink-0">–</span>
+                <input type="time" className="border rounded-xl px-2 py-2 w-full min-w-0 focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.call_to} onChange={set("call_to")} />
               </div>
             </div>
           </div>

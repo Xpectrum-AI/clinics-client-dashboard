@@ -5,6 +5,8 @@ import express from "express"
 import patientsFn from "./api/patients.js"
 import appointmentsFn from "./api/appointments.js"
 import callsFn from "./api/calls.js"
+import callsCreateFn from "./api/calls/create.js"
+import callsTriggerFn from "./api/calls/trigger.js"
 
 const app = express()
 app.use(express.json())
@@ -32,6 +34,8 @@ function adapt(fn) {
 
 app.all("/api/patients", adapt(patientsFn))
 app.all("/api/appointments", adapt(appointmentsFn))
+app.all("/api/calls/create", adapt(callsCreateFn))
+app.all("/api/calls/trigger", adapt(callsTriggerFn))
 app.all("/api/calls", adapt(callsFn))
 
 const port = process.env.PORT || 3001

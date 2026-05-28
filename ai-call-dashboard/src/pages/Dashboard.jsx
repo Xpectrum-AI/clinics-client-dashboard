@@ -4,17 +4,13 @@ import PatientTable from "../components/PatientTable"
 import CallCard from "../components/CallCard"
 import { isToday } from "../lib/dates"
 import { matchesSearch } from "../lib/search"
-import { useApi } from "../hooks/useApi"
+import { useData } from "../context/DataContext"
 
 export default function Dashboard() {
   const { search } = useOutletContext()
-  const { data: patientsData, loading: pLoading, error: pError } = useApi("/api/patients")
-  const { data: callsData, loading: cLoading, error: cError } = useApi("/api/calls")
+  const { patients, calls, loading, errors } = useData()
 
-  const patients = patientsData ?? []
-  const calls = callsData ?? []
-  const loading = pLoading || cLoading
-  const error = pError || cError
+  const error = errors.patients || errors.calls
 
   const visiblePatients = patients.filter((p) => matchesSearch(p, search))
 
@@ -22,11 +18,13 @@ export default function Dashboard() {
   const patientById = Object.fromEntries(patients.map((p) => [p.patient_id, p]))
 
   const totalPatients = patients.length
-  const todaysCalls = calls.filter((c) => isToday(c.scheduled_for))
+  const todaysCalls = calls.filter((c) => isToday(c.next_run_at || c.scheduled_for))
   const pending = calls.filter((c) =>
     ["pending", "scheduled"].includes(c.status)
   ).length
   const completed = calls.filter((c) => c.status === "completed").length
+
+  const isLoading = loading.patients || loading.calls
 
   return (
     <>
@@ -38,10 +36,10 @@ export default function Dashboard() {
 
       {/* Stats */}
       <div className="grid grid-cols-4 gap-4">
-        <StatCard title="Patients" value={loading ? "…" : totalPatients} />
-        <StatCard title="Today's Calls" value={loading ? "…" : todaysCalls.length} />
-        <StatCard title="Pending" value={loading ? "…" : pending} />
-        <StatCard title="Completed" value={loading ? "…" : completed} />
+        <StatCard title="Patients" value={isLoading ? "…" : totalPatients} />
+        <StatCard title="Today's Calls" value={isLoading ? "…" : todaysCalls.length} />
+        <StatCard title="Pending" value={isLoading ? "…" : pending} />
+        <StatCard title="Completed" value={isLoading ? "…" : completed} />
       </div>
 
       {/* Scheduled Calls */}
@@ -51,8 +49,8 @@ export default function Dashboard() {
         </h2>
 
         <div className="space-y-4">
-          {loading && <p className="text-gray-500">Loading…</p>}
-          {!loading && todaysCalls.length === 0 && (
+          {isLoading && <p className="text-gray-500">Loading…</p>}
+          {!isLoading && todaysCalls.length === 0 && (
             <p className="text-gray-500">No calls scheduled for today.</p>
           )}
           {todaysCalls.map((c) => (

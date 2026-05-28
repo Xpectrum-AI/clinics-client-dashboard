@@ -3,12 +3,14 @@ import {
   LayoutDashboard,
   Users,
   Phone,
+  Calendar,
 } from "lucide-react"
 
 const NAV = [
-  { to: "/",         label: "Dashboard", Icon: LayoutDashboard },
-  { to: "/patients", label: "Patients",  Icon: Users },
-  { to: "/calls",    label: "Calls",     Icon: Phone },
+  { to: "/",              label: "Dashboard",    Icon: LayoutDashboard },
+  { to: "/patients",      label: "Patients",     Icon: Users },
+  { to: "/calls",         label: "Calls",        Icon: Phone },
+  { to: "/appointments",  label: "Appointments", Icon: Calendar },
 ]
 
 export default function Sidebar() {

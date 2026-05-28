@@ -1,5 +1,7 @@
-import { useApi } from "../hooks/useApi"
+import { useState } from "react"
+import { useData } from "../context/DataContext"
 import { formatDateTime } from "../lib/dates"
+import AddCallForm from "../components/AddCallForm"
 
 const STATUS_COLOR = {
   completed: "bg-green-100 text-green-700",
@@ -18,53 +20,94 @@ function StatusBadge({ status }) {
 }
 
 export default function Calls() {
-  const { data, loading, error } = useApi("/api/calls")
-  const calls = data ?? []
+  const { calls, loading, errors, triggerCall } = useData()
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [triggeringId, setTriggeringId] = useState(null)
+
+  const handleTriggerCall = async (callId) => {
+    setTriggeringId(callId)
+    const result = await triggerCall(callId)
+    setTriggeringId(null)
+    if (!result.success) {
+      alert(`Failed to trigger call: ${result.error}`)
+    }
+  }
 
   return (
-    <div className="bg-white rounded-2xl p-5 shadow-sm">
-      <h2 className="text-xl font-semibold mb-4">
-        Calls {!loading && `(${calls.length})`}
-      </h2>
-
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-sm mb-4">
-          Failed to load: {error}
+    <>
+      <div className="bg-white rounded-2xl p-5 shadow-sm">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">
+            Calls {!loading.calls && `(${calls.length})`}
+          </h2>
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition-colors"
+          >
+            + Add Call
+          </button>
         </div>
-      )}
 
-      {loading ? (
-        <p className="text-gray-500">Loading…</p>
-      ) : calls.length === 0 ? (
-        <p className="text-gray-500">No calls yet.</p>
-      ) : (
-        <table className="w-full">
-          <thead>
-            <tr className="text-left border-b">
-              <th className="py-3">Purpose</th>
-              <th>Patient</th>
-              <th>Type</th>
-              <th>Scheduled</th>
-              <th>Status</th>
-              <th>Retries</th>
-              <th>Last Attempt</th>
-            </tr>
-          </thead>
-          <tbody>
-            {calls.map((c) => (
-              <tr key={c._id} className="border-b">
-                <td className="py-4">{c.purpose || "—"}</td>
-                <td>{c.patient_id || "—"}</td>
-                <td>{c.type || "—"}</td>
-                <td>{formatDateTime(c.scheduled_for)}</td>
-                <td><StatusBadge status={c.status} /></td>
-                <td>{c.retry_count ?? 0}</td>
-                <td>{formatDateTime(c.last_attempt_at)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        {errors.calls && (
+          <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-sm mb-4">
+            Failed to load: {errors.calls}
+          </div>
+        )}
+
+        {loading.calls ? (
+          <p className="text-gray-500">Loading…</p>
+        ) : calls.length === 0 ? (
+          <p className="text-gray-500">No calls yet.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="text-left border-b">
+                  <th className="py-3">Purpose</th>
+                  <th>Patient</th>
+                  <th>Type</th>
+                  <th>Next Run</th>
+                  <th>Status</th>
+                  <th>Retries</th>
+                  <th>Last Attempt</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {calls.map((c) => (
+                  <tr key={c._id} className="border-b">
+                    <td className="py-4">{c.purpose || "—"}</td>
+                    <td>{c.patient_id || "—"}</td>
+                    <td>{c.type || "—"}</td>
+                    <td>{formatDateTime(c.next_run_at) || "—"}</td>
+                    <td><StatusBadge status={c.status} /></td>
+                    <td>{c.retry_count ?? 0}</td>
+                    <td>{formatDateTime(c.last_attempt_at)}</td>
+                    <td>
+                      <button
+                        onClick={() => handleTriggerCall(c.call_id)}
+                        disabled={triggeringId === c.call_id}
+                        className="bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                      >
+                        {triggeringId === c.call_id ? "Triggering..." : "Trigger"}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {showAddForm && (
+        <AddCallForm
+          onClose={() => setShowAddForm(false)}
+          onSuccess={() => {
+            setShowAddForm(false)
+          }}
+        />
       )}
-    </div>
+    </>
   )
 }

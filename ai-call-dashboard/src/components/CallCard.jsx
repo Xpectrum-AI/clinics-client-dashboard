@@ -18,7 +18,7 @@ export default function CallCard({ call, patient }) {
         </p>
 
         <p className="text-sm text-blue-600 mt-1">
-          {formatTime(call.scheduled_for)}
+          {call.next_run_at ? formatTime(call.next_run_at) : "Not scheduled"}
         </p>
       </div>
 
