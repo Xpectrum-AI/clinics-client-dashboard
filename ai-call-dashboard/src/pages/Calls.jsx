@@ -97,8 +97,8 @@ export default function Calls() {
                     <th>Patient</th>
                     <th>Type</th>
                     <th>Next Run</th>
-                    <th>Status</th>
-                    <th>Retries</th>
+                    {/* <th>Status</th> */}
+                    {/* <th>Retries</th> */}
                     <th>Last Attempt</th>
                     <th>Action</th>
                   </tr>
@@ -110,8 +110,8 @@ export default function Calls() {
                       <td>{c.patient_id || "—"}</td>
                       <td>{typeLabel(c.type)}</td>
                       <td>{formatDateTime(c.next_run_at) || "—"}</td>
-                      <td><StatusBadge status={c.status} /></td>
-                      <td>{c.retry_count ?? 0}</td>
+                      {/* <td><StatusBadge status={c.status} /></td> */}
+                      {/* <td>{c.retry_count ?? 0}</td> */}
                       <td>{formatDateTime(c.last_attempt_at)}</td>
                       <td>
                         <div className="flex gap-2">
@@ -142,13 +142,13 @@ export default function Calls() {
                 <div key={c._id} className="border rounded-xl p-4 space-y-2">
                   <div className="flex justify-between items-start gap-2">
                     <h3 className="font-semibold">{c.purpose || "—"}</h3>
-                    <StatusBadge status={c.status} />
+                    {/* <StatusBadge status={c.status} /> */}
                   </div>
                   <div className="space-y-1">
                     <Field label="Patient">{c.patient_id || "—"}</Field>
                     <Field label="Type">{typeLabel(c.type)}</Field>
                     <Field label="Next Run">{formatDateTime(c.next_run_at) || "—"}</Field>
-                    <Field label="Retries">{c.retry_count ?? 0}</Field>
+                    {/* <Field label="Retries">{c.retry_count ?? 0}</Field> */}
                     <Field label="Last Attempt">{formatDateTime(c.last_attempt_at) || "—"}</Field>
                   </div>
                   <div className="flex gap-2">
