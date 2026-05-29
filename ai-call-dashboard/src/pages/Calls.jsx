@@ -41,10 +41,13 @@ function Field({ label, children }) {
 }
 
 export default function Calls() {
-  const { calls, loading, errors, triggerCall } = useData()
+  const { calls, patients, loading, errors, triggerCall } = useData()
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingCall, setEditingCall] = useState(null)
   const [triggeringId, setTriggeringId] = useState(null)
+
+  // patient_id -> patient, for showing name & phone instead of the raw id
+  const patientById = Object.fromEntries(patients.map((p) => [p.patient_id, p]))
 
   const handleTriggerCall = async (callId) => {
     setTriggeringId(callId)
@@ -107,7 +110,16 @@ export default function Calls() {
                   {calls.map((c) => (
                     <tr key={c._id} className="border-b">
                       <td className="py-4">{c.purpose || "—"}</td>
-                      <td>{c.patient_id || "—"}</td>
+                      <td>
+                        {patientById[c.patient_id] ? (
+                          <div className="flex flex-col">
+                            <span>{patientById[c.patient_id].name}</span>
+                            <span className="text-xs text-gray-400">{patientById[c.patient_id].phone}</span>
+                          </div>
+                        ) : (
+                          c.patient_id || "—"
+                        )}
+                      </td>
                       <td>{typeLabel(c.type)}</td>
                       <td>{formatDateTime(c.next_run_at) || "—"}</td>
                       {/* <td><StatusBadge status={c.status} /></td> */}
@@ -145,7 +157,16 @@ export default function Calls() {
                     {/* <StatusBadge status={c.status} /> */}
                   </div>
                   <div className="space-y-1">
-                    <Field label="Patient">{c.patient_id || "—"}</Field>
+                    <Field label="Patient">
+                      {patientById[c.patient_id] ? (
+                        <span>
+                          {patientById[c.patient_id].name}
+                          <span className="text-gray-400"> · {patientById[c.patient_id].phone}</span>
+                        </span>
+                      ) : (
+                        c.patient_id || "—"
+                      )}
+                    </Field>
                     <Field label="Type">{typeLabel(c.type)}</Field>
                     <Field label="Next Run">{formatDateTime(c.next_run_at) || "—"}</Field>
                     {/* <Field label="Retries">{c.retry_count ?? 0}</Field> */}
