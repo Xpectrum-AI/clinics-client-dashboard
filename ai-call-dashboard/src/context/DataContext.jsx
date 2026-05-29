@@ -69,6 +69,21 @@ export function DataProvider({ children }) {
     }
   }
 
+  const updateCall = async (callId, type) => {
+    try {
+      const res = await fetch("/api/calls/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ call_id: callId, type })
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      await fetchCalls() // Refresh calls after updating
+      return { success: true }
+    } catch (err) {
+      return { success: false, error: err.message }
+    }
+  }
+
   const createCall = async (callData) => {
     try {
       const res = await fetch("/api/calls/create", {
@@ -104,6 +119,7 @@ export function DataProvider({ children }) {
         fetchAppointments,
         triggerCall,
         createCall,
+        updateCall,
       }}
     >
       {children}

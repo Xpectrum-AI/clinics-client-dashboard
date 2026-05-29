@@ -2,6 +2,18 @@ import { useState } from "react"
 import { useData } from "../context/DataContext"
 import { formatDateTime } from "../lib/dates"
 import AddCallForm from "../components/AddCallForm"
+import EditCallForm from "../components/EditCallForm"
+
+const TYPE_LABEL = {
+  confirm: "Confirm",
+  rescheduled: "Rescheduled",
+  cancelled: "Cancelled",
+  no_show: "No Show",
+  followup: "Follow-up",
+  inactive: "Inactive",
+}
+
+const typeLabel = (t) => TYPE_LABEL[t] || t || "—"
 
 const STATUS_COLOR = {
   completed: "bg-green-100 text-green-700",
@@ -31,6 +43,7 @@ function Field({ label, children }) {
 export default function Calls() {
   const { calls, loading, errors, triggerCall } = useData()
   const [showAddForm, setShowAddForm] = useState(false)
+  const [editingCall, setEditingCall] = useState(null)
   const [triggeringId, setTriggeringId] = useState(null)
 
   const handleTriggerCall = async (callId) => {
@@ -44,6 +57,9 @@ export default function Calls() {
 
   const triggerBtnCls =
     "bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm transition-colors"
+
+  const editBtnCls =
+    "border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 text-sm transition-colors"
 
   return (
     <>
@@ -92,19 +108,27 @@ export default function Calls() {
                     <tr key={c._id} className="border-b">
                       <td className="py-4">{c.purpose || "—"}</td>
                       <td>{c.patient_id || "—"}</td>
-                      <td>{c.type || "—"}</td>
+                      <td>{typeLabel(c.type)}</td>
                       <td>{formatDateTime(c.next_run_at) || "—"}</td>
                       <td><StatusBadge status={c.status} /></td>
                       <td>{c.retry_count ?? 0}</td>
                       <td>{formatDateTime(c.last_attempt_at)}</td>
                       <td>
-                        <button
-                          onClick={() => handleTriggerCall(c.call_id)}
-                          disabled={triggeringId === c.call_id}
-                          className={`px-3 py-1 ${triggerBtnCls}`}
-                        >
-                          {triggeringId === c.call_id ? "Triggering..." : "Trigger"}
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => setEditingCall(c)}
+                            className={`px-3 py-1 ${editBtnCls}`}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleTriggerCall(c.call_id)}
+                            disabled={triggeringId === c.call_id}
+                            className={`px-3 py-1 ${triggerBtnCls}`}
+                          >
+                            {triggeringId === c.call_id ? "Triggering..." : "Trigger"}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -122,18 +146,26 @@ export default function Calls() {
                   </div>
                   <div className="space-y-1">
                     <Field label="Patient">{c.patient_id || "—"}</Field>
-                    <Field label="Type">{c.type || "—"}</Field>
+                    <Field label="Type">{typeLabel(c.type)}</Field>
                     <Field label="Next Run">{formatDateTime(c.next_run_at) || "—"}</Field>
                     <Field label="Retries">{c.retry_count ?? 0}</Field>
                     <Field label="Last Attempt">{formatDateTime(c.last_attempt_at) || "—"}</Field>
                   </div>
-                  <button
-                    onClick={() => handleTriggerCall(c.call_id)}
-                    disabled={triggeringId === c.call_id}
-                    className={`w-full px-3 py-2 ${triggerBtnCls}`}
-                  >
-                    {triggeringId === c.call_id ? "Triggering..." : "Trigger"}
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setEditingCall(c)}
+                      className={`w-full px-3 py-2 ${editBtnCls}`}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleTriggerCall(c.call_id)}
+                      disabled={triggeringId === c.call_id}
+                      className={`w-full px-3 py-2 ${triggerBtnCls}`}
+                    >
+                      {triggeringId === c.call_id ? "Triggering..." : "Trigger"}
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -147,6 +179,14 @@ export default function Calls() {
           onSuccess={() => {
             setShowAddForm(false)
           }}
+        />
+      )}
+
+      {editingCall && (
+        <EditCallForm
+          call={editingCall}
+          onClose={() => setEditingCall(null)}
+          onSuccess={() => setEditingCall(null)}
         />
       )}
     </>
