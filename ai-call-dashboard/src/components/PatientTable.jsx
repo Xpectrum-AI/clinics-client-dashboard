@@ -20,6 +20,7 @@ export default function PatientTable({ patients = [] }) {
           <tr className="text-left border-b">
             <th className="py-3">Name</th>
             <th>Phone</th>
+            <th>DOB</th>
             <th>Age</th>
             <th>Status</th>
             <th>Notes</th>
@@ -32,6 +33,7 @@ export default function PatientTable({ patients = [] }) {
             <tr key={p._id} className="border-b">
               <td className="py-4">{p.name || "—"}</td>
               <td>{p.phone || "—"}</td>
+              <td>{p.date_of_birth || "—"}</td>
               <td>{p.age ?? "—"}</td>
               <td>{p.status || "—"}</td>
               <td>{p.notes || "—"}</td>

@@ -5,6 +5,7 @@ const EMPTY = {
   last_name: "",
   phone: "",
   age: "",
+  date_of_birth: "",
   gender: "",
   patient_status: "active",
   notes: "",
@@ -19,6 +20,7 @@ function fromPatient(p) {
     last_name: p.last_name || "",
     phone: p.phone || "",
     age: p.age ?? "",
+    date_of_birth: p.date_of_birth || "",
     gender: p.gender || "",
     patient_status: p.status || "active",
     notes: p.notes || "",
@@ -54,6 +56,7 @@ export default function PatientModal({ open, onClose, onSaved, patient }) {
         last_name: form.last_name,
         phone: form.phone,
         age: form.age,
+        date_of_birth: form.date_of_birth,
         gender: form.gender,
         patient_status: form.patient_status,
         notes: form.notes,
@@ -117,9 +120,16 @@ export default function PatientModal({ open, onClose, onSaved, patient }) {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
+              <label className="text-sm text-gray-600">Date of birth</label>
+              <input type="date" className={inputCls} value={form.date_of_birth} onChange={set("date_of_birth")} />
+            </div>
+            <div>
               <label className="text-sm text-gray-600">Age</label>
               <input type="number" min="0" className={inputCls} value={form.age} onChange={set("age")} />
             </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-sm text-gray-600">Gender</label>
               <select className={inputCls} value={form.gender} onChange={set("gender")}>

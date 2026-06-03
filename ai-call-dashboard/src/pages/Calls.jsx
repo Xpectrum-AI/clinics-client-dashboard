@@ -31,6 +31,26 @@ function StatusBadge({ status }) {
   )
 }
 
+function VerifiedBadge({ verified }) {
+  // Tolerant of boolean true/false or string "true"/"false" (the workflow may
+  // store either, depending on how the Mongo update serialises it).
+  const isVerified = verified === true || verified === "true"
+  const isFailed = verified === false || verified === "false"
+  if (isVerified)
+    return (
+      <span className="px-2 py-1 rounded-md text-xs font-medium bg-green-100 text-green-700">
+        Verified
+      </span>
+    )
+  if (isFailed)
+    return (
+      <span className="px-2 py-1 rounded-md text-xs font-medium bg-red-100 text-red-700">
+        Failed
+      </span>
+    )
+  return <span className="text-gray-400 text-xs">—</span>
+}
+
 function Field({ label, children }) {
   return (
     <div className="flex justify-between gap-3 text-sm">
@@ -99,6 +119,7 @@ export default function Calls() {
                     <th className="py-3">Purpose</th>
                     <th>Patient</th>
                     <th>Type</th>
+                    <th>Identity</th>
                     <th>Next Run</th>
                     {/* <th>Status</th> */}
                     {/* <th>Retries</th> */}
@@ -121,6 +142,7 @@ export default function Calls() {
                         )}
                       </td>
                       <td>{typeLabel(c.type)}</td>
+                      <td><VerifiedBadge verified={c.identity_verified} /></td>
                       <td>{formatDateTime(c.next_run_at) || "—"}</td>
                       {/* <td><StatusBadge status={c.status} /></td> */}
                       {/* <td>{c.retry_count ?? 0}</td> */}
@@ -168,6 +190,7 @@ export default function Calls() {
                       )}
                     </Field>
                     <Field label="Type">{typeLabel(c.type)}</Field>
+                    <Field label="Identity"><VerifiedBadge verified={c.identity_verified} /></Field>
                     <Field label="Next Run">{formatDateTime(c.next_run_at) || "—"}</Field>
                     {/* <Field label="Retries">{c.retry_count ?? 0}</Field> */}
                     <Field label="Last Attempt">{formatDateTime(c.last_attempt_at) || "—"}</Field>

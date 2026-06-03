@@ -8,6 +8,7 @@ import callsFn from "./api/calls.js"
 import callsCreateFn from "./api/calls-create.js"
 import callsUpdateFn from "./api/calls-update.js"
 import callsTriggerFn from "./api/calls-trigger.js"
+import callsDetailFn from "./api/calls-detail.js"
 
 const app = express()
 app.use(express.json())
@@ -38,6 +39,7 @@ app.all("/api/appointments", adapt(appointmentsFn))
 app.all("/api/calls/create", adapt(callsCreateFn))
 app.all("/api/calls/update", adapt(callsUpdateFn))
 app.all("/api/calls/trigger", adapt(callsTriggerFn))
+app.all("/api/calls/detail", adapt(callsDetailFn))
 app.all("/api/calls", adapt(callsFn))
 
 const port = process.env.PORT || 3001
