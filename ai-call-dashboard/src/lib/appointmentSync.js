@@ -1,23 +1,32 @@
-// Display-only mirror of the server-side call-type -> appointment mapping.
+// Display-only mirror of the server-side call-type mapping.
 // Source of truth lives in api/_lib/appointment-sync.js; this exists so the
-// Add/Edit Call forms can preview what changing a call's type will do to the
-// linked appointment. Keep the two in sync.
+// Add/Edit Call forms can preview what a chosen call type will do (purpose,
+// linked appointment status/confirmation, and the appointment's timing).
+// Keep the two in sync.
 
-export const TYPE_TO_APPOINTMENT = {
-  confirm:     { status: "scheduled",   confirmation_status: "confirmed" },
-  rescheduled: { status: "rescheduled", confirmation_status: "pending" },
-  cancelled:   { status: "cancelled",   confirmation_status: "declined" },
-  no_show:     { status: "no_show",     confirmation_status: "declined" },
-  followup:    { status: "completed" }, // confirmation_status unchanged
-  inactive:    null,                    // no appointment change
+export const CALL_TYPE_CONFIG = {
+  confirm:     { purpose: "Appointment Confirmation",      status: "scheduled",   confirmation_status: "confirmed", when: "always 2 days from now" },
+  rescheduled: { purpose: "Appointment Reschedule",        status: "rescheduled", confirmation_status: "pending",   when: "always 2 days from now" },
+  cancelled:   { purpose: "Appointment Cancellation",      status: "cancelled",   confirmation_status: "declined",  when: "always 2 days from now" },
+  no_show:     { purpose: "Missed Appointment Follow-Up",  status: "no_show",     confirmation_status: "declined",  when: "always 2 days ago" },
+  followup:    { purpose: "Post-Appointment Follow-Up",    status: "completed",                                     when: "always 2 days ago" },
+  inactive:    { purpose: "Inactive Patient Reactivation",                                                          when: "always 6 months ago" },
 }
 
-// Human-readable description of the appointment effect for a given call type.
+// Standard purpose label for a call of this type.
+export function purposeForType(type) {
+  return CALL_TYPE_CONFIG[type]?.purpose || ""
+}
+
+// Human-readable description of what choosing this type does to the appointment.
 export function appointmentEffect(type) {
-  const m = TYPE_TO_APPOINTMENT[type]
-  if (!m) return "No change to the linked appointment."
+  const cfg = CALL_TYPE_CONFIG[type]
+  if (!cfg) return "No change to the linked appointment."
   const parts = []
-  if (m.status) parts.push(`status → ${m.status}`)
-  if (m.confirmation_status) parts.push(`confirmation → ${m.confirmation_status}`)
-  return `Linked appointment: ${parts.join(", ")}.`
+  if (cfg.status) parts.push(`status → ${cfg.status}`)
+  if (cfg.confirmation_status) parts.push(`confirmation → ${cfg.confirmation_status}`)
+  if (cfg.when) parts.push(`date → ${cfg.when}`)
+  return parts.length
+    ? `Linked appointment: ${parts.join(", ")}.`
+    : "No change to the linked appointment."
 }

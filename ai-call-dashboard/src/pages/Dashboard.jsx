@@ -8,9 +8,9 @@ import { useData } from "../context/DataContext"
 
 export default function Dashboard() {
   const { search } = useOutletContext()
-  const { patients, calls, loading, errors } = useData()
+  const { patients, calls, appointments, loading, errors } = useData()
 
-  const error = errors.patients || errors.calls
+  const error = errors.patients || errors.calls || errors.appointments
 
   const visiblePatients = patients.filter((p) => matchesSearch(p, search))
 
@@ -19,12 +19,13 @@ export default function Dashboard() {
 
   const totalPatients = patients.length
   const todaysCalls = calls.filter((c) => isToday(c.next_run_at || c.scheduled_for))
-  const pending = calls.filter((c) =>
-    ["pending", "scheduled"].includes(c.status)
+  // Derived from the synced appointment state (kept in step with call types).
+  const upcoming = appointments.filter((a) =>
+    ["scheduled", "rescheduled"].includes(a.status)
   ).length
-  const completed = calls.filter((c) => c.status === "completed").length
+  const completed = appointments.filter((a) => a.status === "completed").length
 
-  const isLoading = loading.patients || loading.calls
+  const isLoading = loading.patients || loading.calls || loading.appointments
 
   return (
     <>
@@ -38,7 +39,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard title="Patients" value={isLoading ? "…" : totalPatients} />
         <StatCard title="Today's Calls" value={isLoading ? "…" : todaysCalls.length} />
-        <StatCard title="Pending" value={isLoading ? "…" : pending} />
+        <StatCard title="Upcoming" value={isLoading ? "…" : upcoming} />
         <StatCard title="Completed" value={isLoading ? "…" : completed} />
       </div>
 

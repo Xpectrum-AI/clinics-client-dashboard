@@ -1,5 +1,9 @@
 import { getDb } from "./_lib/mongo.js"
-import { syncAppointmentForCallType } from "./_lib/appointment-sync.js"
+import {
+  syncAppointmentForCallType,
+  syncPatientForCallType,
+  purposeForType,
+} from "./_lib/appointment-sync.js"
 
 const ALLOWED_TYPES = [
   "confirm",
@@ -34,6 +38,8 @@ export default async (req) => {
         )
       }
       update.type = type
+      // Purpose is derived from the type so the two stay in sync.
+      update.purpose = purposeForType(type)
     }
 
     // Identity verification outcome written back by the voice workflow.
@@ -58,12 +64,13 @@ export default async (req) => {
       return Response.json({ error: "Call not found" }, { status: 404 })
     }
 
-    // When the call's type changed, keep its linked appointment consistent.
+    // When the call's type changed, keep its linked appointment + patient consistent.
     let appointment_sync = null
+    let patient_sync = null
     if (update.type !== undefined) {
       const call = await db
         .collection("calls")
-        .findOne({ call_id }, { projection: { appointment_id: 1 } })
+        .findOne({ call_id }, { projection: { appointment_id: 1, patient_id: 1 } })
       if (call?.appointment_id) {
         appointment_sync = await syncAppointmentForCallType(
           db,
@@ -71,9 +78,18 @@ export default async (req) => {
           update.type
         )
       }
+      if (call?.patient_id) {
+        patient_sync = await syncPatientForCallType(db, call.patient_id, update.type)
+      }
     }
 
-    return Response.json({ success: true, call_id, ...update, appointment_sync })
+    return Response.json({
+      success: true,
+      call_id,
+      ...update,
+      appointment_sync,
+      patient_sync,
+    })
   } catch (err) {
     console.error("[api/calls/update] error:", err)
     return Response.json({ error: err.message }, { status: 500 })

@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useData } from "../context/DataContext"
-import { appointmentEffect } from "../lib/appointmentSync"
+import { appointmentEffect, purposeForType } from "../lib/appointmentSync"
 
 const TYPE_OPTIONS = [
   { value: "confirm", label: "Confirm" },
@@ -56,7 +56,10 @@ export default function EditCallForm({ call, onClose, onSuccess }) {
                 <option key={o.value} value={o.value}>{o.label}</option>
               ))}
             </select>
-            <p className="text-xs text-gray-500 mt-1">{appointmentEffect(type)}</p>
+            <div className="text-xs text-gray-500 mt-1 space-y-0.5">
+              <p>Purpose → <span className="font-medium text-gray-700">{purposeForType(type)}</span></p>
+              <p>{appointmentEffect(type)}</p>
+            </div>
           </div>
 
           {error && <p className="text-red-600 text-sm">{error}</p>}

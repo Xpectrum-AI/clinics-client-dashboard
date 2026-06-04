@@ -1,12 +1,11 @@
 import { useState } from "react"
 import { useData } from "../context/DataContext"
-import { appointmentEffect } from "../lib/appointmentSync"
+import { appointmentEffect, purposeForType } from "../lib/appointmentSync"
 
 const EMPTY = {
   patient_id: "",
   appointment_id: "",
   type: "confirm",
-  purpose: "",
   scheduled_for: "",
   next_run_at: "",
   prompt: ""
@@ -35,7 +34,7 @@ export default function AddCallForm({ onClose, onSuccess }) {
         patient_id: form.patient_id,
         appointment_id: form.appointment_id,
         type: form.type,
-        purpose: form.purpose,
+        // purpose is derived from type server-side (kept in sync)
         scheduled_for: form.scheduled_for,
         next_run_at: form.next_run_at || null,
         status: "scheduled",
@@ -112,8 +111,9 @@ export default function AddCallForm({ onClose, onSuccess }) {
               <p className="text-xs text-gray-500 mt-1">{appointmentEffect(form.type)}</p>
             </div>
             <div>
-              <label className="text-sm text-gray-600">Purpose *</label>
-              <input type="text" value={form.purpose} onChange={set("purpose")} required placeholder="e.g., Post Extraction Follow-Up" className={inputCls} />
+              <label className="text-sm text-gray-600">Purpose</label>
+              <input type="text" value={purposeForType(form.type)} readOnly tabIndex={-1} className={`${inputCls} bg-gray-50 text-gray-500 cursor-not-allowed`} />
+              <p className="text-xs text-gray-400 mt-1">Set automatically from the call type.</p>
             </div>
           </div>
 
