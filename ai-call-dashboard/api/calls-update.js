@@ -1,4 +1,5 @@
 import { getDb } from "./_lib/mongo.js"
+import { syncAppointmentForCallType } from "./_lib/appointment-sync.js"
 
 const ALLOWED_TYPES = [
   "confirm",
@@ -57,7 +58,22 @@ export default async (req) => {
       return Response.json({ error: "Call not found" }, { status: 404 })
     }
 
-    return Response.json({ success: true, call_id, ...update })
+    // When the call's type changed, keep its linked appointment consistent.
+    let appointment_sync = null
+    if (update.type !== undefined) {
+      const call = await db
+        .collection("calls")
+        .findOne({ call_id }, { projection: { appointment_id: 1 } })
+      if (call?.appointment_id) {
+        appointment_sync = await syncAppointmentForCallType(
+          db,
+          call.appointment_id,
+          update.type
+        )
+      }
+    }
+
+    return Response.json({ success: true, call_id, ...update, appointment_sync })
   } catch (err) {
     console.error("[api/calls/update] error:", err)
     return Response.json({ error: err.message }, { status: 500 })

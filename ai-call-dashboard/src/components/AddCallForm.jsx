@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { useData } from "../context/DataContext"
+import { appointmentEffect } from "../lib/appointmentSync"
 
 const EMPTY = {
   patient_id: "",
@@ -108,6 +109,7 @@ export default function AddCallForm({ onClose, onSuccess }) {
                 <option value="followup">Follow-up</option>
                 <option value="inactive">Inactive</option>
               </select>
+              <p className="text-xs text-gray-500 mt-1">{appointmentEffect(form.type)}</p>
             </div>
             <div>
               <label className="text-sm text-gray-600">Purpose *</label>

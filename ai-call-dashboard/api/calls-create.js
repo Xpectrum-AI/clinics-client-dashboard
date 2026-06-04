@@ -1,4 +1,5 @@
 import { getDb } from "./_lib/mongo.js"
+import { syncAppointmentForCallType } from "./_lib/appointment-sync.js"
 
 export default async (req) => {
   if (req.method !== "POST") {
@@ -51,7 +52,18 @@ export default async (req) => {
     }
 
     const result = await db.collection("calls").insertOne(newCall)
-    return Response.json({ ...newCall, _id: result.insertedId.toString() }, { status: 201 })
+
+    // Keep the linked appointment consistent with the new call's type.
+    const appointment_sync = await syncAppointmentForCallType(
+      db,
+      appointment_id,
+      type
+    )
+
+    return Response.json(
+      { ...newCall, _id: result.insertedId.toString(), appointment_sync },
+      { status: 201 }
+    )
   } catch (err) {
     console.error("[api/calls/create] error:", err)
     return Response.json({ error: err.message }, { status: 500 })

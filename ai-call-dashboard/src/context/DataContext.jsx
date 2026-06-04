@@ -77,7 +77,8 @@ export function DataProvider({ children }) {
         body: JSON.stringify({ call_id: callId, type })
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      await fetchCalls() // Refresh calls after updating
+      // Refresh both: the call's type changed and its linked appointment was synced.
+      await Promise.all([fetchCalls(), fetchAppointments()])
       return { success: true }
     } catch (err) {
       return { success: false, error: err.message }
@@ -93,7 +94,8 @@ export function DataProvider({ children }) {
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const newCall = await res.json()
-      await fetchCalls() // Refresh calls after creating
+      // Refresh both: a new call also synced its linked appointment.
+      await Promise.all([fetchCalls(), fetchAppointments()])
       return { success: true, data: newCall }
     } catch (err) {
       return { success: false, error: err.message }

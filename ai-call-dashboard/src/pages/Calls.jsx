@@ -16,40 +16,26 @@ const TYPE_LABEL = {
 const typeLabel = (t) => TYPE_LABEL[t] || t || "—"
 
 const STATUS_COLOR = {
-  completed: "bg-green-100 text-green-700",
-  scheduled: "bg-blue-100 text-blue-700",
-  pending:   "bg-yellow-100 text-yellow-700",
-  failed:    "bg-red-100 text-red-700",
+  completed:   "bg-green-100 text-green-700",
+  scheduled:   "bg-blue-100 text-blue-700",
+  pending:     "bg-yellow-100 text-yellow-700",
+  failed:      "bg-red-100 text-red-700",
+  cancelled:   "bg-red-100 text-red-700",
+  rescheduled: "bg-purple-100 text-purple-700",
+  no_show:     "bg-orange-100 text-orange-700",
 }
 
 function StatusBadge({ status }) {
   const cls = STATUS_COLOR[status] || "bg-gray-100 text-gray-700"
   return (
-    <span className={`px-2 py-1 rounded-md text-xs font-medium ${cls}`}>
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${cls}`}>
       {status || "—"}
     </span>
   )
 }
 
-function VerifiedBadge({ verified }) {
-  // Tolerant of boolean true/false or string "true"/"false" (the workflow may
-  // store either, depending on how the Mongo update serialises it).
-  const isVerified = verified === true || verified === "true"
-  const isFailed = verified === false || verified === "false"
-  if (isVerified)
-    return (
-      <span className="px-2 py-1 rounded-md text-xs font-medium bg-green-100 text-green-700">
-        Verified
-      </span>
-    )
-  if (isFailed)
-    return (
-      <span className="px-2 py-1 rounded-md text-xs font-medium bg-red-100 text-red-700">
-        Failed
-      </span>
-    )
-  return <span className="text-gray-400 text-xs">—</span>
-}
+const thCls = "px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500"
+const tdCls = "px-4 py-4 align-middle text-sm text-gray-700"
 
 function Field({ label, children }) {
   return (
@@ -61,13 +47,21 @@ function Field({ label, children }) {
 }
 
 export default function Calls() {
-  const { calls, patients, loading, errors, triggerCall } = useData()
+  const { calls, patients, appointments, loading, errors, triggerCall } = useData()
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingCall, setEditingCall] = useState(null)
   const [triggeringId, setTriggeringId] = useState(null)
 
   // patient_id -> patient, for showing name & phone instead of the raw id
   const patientById = Object.fromEntries(patients.map((p) => [p.patient_id, p]))
+  // appointment_id -> appointment, so each call can show the linked appointment's
+  // current status next to its type (the two are kept in sync server-side).
+  const apptById = Object.fromEntries(appointments.map((a) => [a.appointment_id, a]))
+
+  // Sorted by appointment so this list lines up with the Appointments page.
+  const sortedCalls = [...calls].sort((a, b) =>
+    (a.appointment_id || "").localeCompare(b.appointment_id || "")
+  )
 
   const handleTriggerCall = async (callId) => {
     setTriggeringId(callId)
@@ -112,26 +106,26 @@ export default function Calls() {
         ) : (
           <>
             {/* Desktop table */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full">
+            <div className="hidden md:block overflow-x-auto rounded-xl border border-gray-200">
+              <table className="w-full border-collapse">
                 <thead>
-                  <tr className="text-left border-b">
-                    <th className="py-3">Purpose</th>
-                    <th>Patient</th>
-                    <th>Type</th>
-                    <th>Identity</th>
-                    <th>Next Run</th>
-                    {/* <th>Status</th> */}
-                    {/* <th>Retries</th> */}
-                    <th>Last Attempt</th>
-                    <th>Action</th>
+                  <tr className="text-left bg-gray-50 border-b border-gray-200">
+                    <th className={thCls}>Purpose</th>
+                    <th className={thCls}>Patient</th>
+                    <th className={thCls}>Type</th>
+                    <th className={thCls}>Appointment</th>
+                    <th className={thCls}>Next Run</th>
+                    {/* <th className={thCls}>Status</th> */}
+                    {/* <th className={thCls}>Retries</th> */}
+                    <th className={thCls}>Last Attempt</th>
+                    <th className={`${thCls} text-right`}>Action</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {calls.map((c) => (
-                    <tr key={c._id} className="border-b">
-                      <td className="py-4">{c.purpose || "—"}</td>
-                      <td>
+                <tbody className="divide-y divide-gray-100">
+                  {sortedCalls.map((c) => (
+                    <tr key={c._id} className="hover:bg-gray-50/70 transition-colors">
+                      <td className={`${tdCls} font-medium text-gray-900`}>{c.purpose || "—"}</td>
+                      <td className={tdCls}>
                         {patientById[c.patient_id] ? (
                           <div className="flex flex-col">
                             <span>{patientById[c.patient_id].name}</span>
@@ -141,24 +135,33 @@ export default function Calls() {
                           c.patient_id || "—"
                         )}
                       </td>
-                      <td>{typeLabel(c.type)}</td>
-                      <td><VerifiedBadge verified={c.identity_verified} /></td>
-                      <td>{formatDateTime(c.next_run_at) || "—"}</td>
-                      {/* <td><StatusBadge status={c.status} /></td> */}
-                      {/* <td>{c.retry_count ?? 0}</td> */}
-                      <td>{formatDateTime(c.last_attempt_at)}</td>
-                      <td>
-                        <div className="flex gap-2">
+                      <td className={tdCls}>{typeLabel(c.type)}</td>
+                      <td className={tdCls}>
+                        {apptById[c.appointment_id] ? (
+                          <div className="flex flex-col gap-1 items-start">
+                            <span className="text-xs text-gray-400">{c.appointment_id}</span>
+                            <StatusBadge status={apptById[c.appointment_id].status} />
+                          </div>
+                        ) : (
+                          c.appointment_id || "—"
+                        )}
+                      </td>
+                      <td className={`${tdCls} whitespace-nowrap`}>{formatDateTime(c.next_run_at) || "—"}</td>
+                      {/* <td className={tdCls}><StatusBadge status={c.status} /></td> */}
+                      {/* <td className={tdCls}>{c.retry_count ?? 0}</td> */}
+                      <td className={`${tdCls} whitespace-nowrap`}>{formatDateTime(c.last_attempt_at)}</td>
+                      <td className={tdCls}>
+                        <div className="flex gap-2 justify-end">
                           <button
                             onClick={() => setEditingCall(c)}
-                            className={`px-3 py-1 ${editBtnCls}`}
+                            className={`px-3 py-1.5 ${editBtnCls}`}
                           >
                             Edit
                           </button>
                           <button
                             onClick={() => handleTriggerCall(c.call_id)}
                             disabled={triggeringId === c.call_id}
-                            className={`px-3 py-1 ${triggerBtnCls}`}
+                            className={`px-3 py-1.5 ${triggerBtnCls}`}
                           >
                             {triggeringId === c.call_id ? "Triggering..." : "Trigger"}
                           </button>
@@ -172,7 +175,7 @@ export default function Calls() {
 
             {/* Mobile cards */}
             <div className="md:hidden space-y-3">
-              {calls.map((c) => (
+              {sortedCalls.map((c) => (
                 <div key={c._id} className="border rounded-xl p-4 space-y-2">
                   <div className="flex justify-between items-start gap-2">
                     <h3 className="font-semibold">{c.purpose || "—"}</h3>
@@ -190,7 +193,16 @@ export default function Calls() {
                       )}
                     </Field>
                     <Field label="Type">{typeLabel(c.type)}</Field>
-                    <Field label="Identity"><VerifiedBadge verified={c.identity_verified} /></Field>
+                    <Field label="Appointment">
+                      {apptById[c.appointment_id] ? (
+                        <span>
+                          <span className="text-gray-400">{c.appointment_id} · </span>
+                          <StatusBadge status={apptById[c.appointment_id].status} />
+                        </span>
+                      ) : (
+                        c.appointment_id || "—"
+                      )}
+                    </Field>
                     <Field label="Next Run">{formatDateTime(c.next_run_at) || "—"}</Field>
                     {/* <Field label="Retries">{c.retry_count ?? 0}</Field> */}
                     <Field label="Last Attempt">{formatDateTime(c.last_attempt_at) || "—"}</Field>

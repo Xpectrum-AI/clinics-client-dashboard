@@ -5,22 +5,28 @@ const STATUS_COLOR = {
   completed: "bg-green-100 text-green-700",
   cancelled: "bg-red-100 text-red-700",
   pending: "bg-yellow-100 text-yellow-700",
+  rescheduled: "bg-purple-100 text-purple-700",
+  no_show: "bg-orange-100 text-orange-700",
 }
 
 const CONFIRMATION_COLOR = {
   confirmed: "bg-green-100 text-green-700",
   pending: "bg-yellow-100 text-yellow-700",
   declined: "bg-red-100 text-red-700",
+  unreachable: "bg-gray-100 text-gray-600",
 }
 
 function Badge({ value, colorMap }) {
   const cls = colorMap[value] || "bg-gray-100 text-gray-700"
   return (
-    <span className={`px-2 py-1 rounded-md text-xs font-medium ${cls}`}>
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${cls}`}>
       {value || "—"}
     </span>
   )
 }
+
+const thCls = "px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500 whitespace-nowrap"
+const tdCls = "px-4 py-4 align-middle text-sm text-gray-700 whitespace-nowrap"
 
 function Field({ label, children }) {
   return (
@@ -33,6 +39,11 @@ function Field({ label, children }) {
 
 export default function Appointments() {
   const { appointments, loading, errors } = useData()
+
+  // Sorted by id so this list lines up with the Calls page.
+  const sortedAppointments = [...appointments].sort((a, b) =>
+    (a.appointment_id || "").localeCompare(b.appointment_id || "")
+  )
 
   return (
     <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm">
@@ -53,35 +64,35 @@ export default function Appointments() {
       ) : (
         <>
           {/* Desktop table */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full">
+          <div className="hidden md:block overflow-x-auto rounded-xl border border-gray-200">
+            <table className="w-full border-collapse">
               <thead>
-                <tr className="text-left border-b">
-                  <th className="py-3">Appointment ID</th>
-                  <th>Patient ID</th>
-                  <th>Doctor</th>
-                  <th>Department</th>
-                  <th>Procedure</th>
-                  <th>Date</th>
-                  <th>Time</th>
-                  <th>Status</th>
-                  <th>Confirmation</th>
-                  <th>Clinic</th>
+                <tr className="text-left bg-gray-50 border-b border-gray-200">
+                  <th className={thCls}>Appointment ID</th>
+                  <th className={thCls}>Patient ID</th>
+                  <th className={thCls}>Doctor</th>
+                  <th className={thCls}>Department</th>
+                  <th className={thCls}>Procedure</th>
+                  <th className={thCls}>Date</th>
+                  <th className={thCls}>Time</th>
+                  <th className={thCls}>Status</th>
+                  <th className={thCls}>Confirmation</th>
+                  <th className={thCls}>Clinic</th>
                 </tr>
               </thead>
-              <tbody>
-                {appointments.map((apt) => (
-                  <tr key={apt._id} className="border-b">
-                    <td className="py-4">{apt.appointment_id || "—"}</td>
-                    <td>{apt.patient_id || "—"}</td>
-                    <td>{apt.doctor_name || "—"}</td>
-                    <td>{apt.department || "—"}</td>
-                    <td>{apt.procedure || "—"}</td>
-                    <td>{apt.appointment_date || "—"}</td>
-                    <td>{apt.appointment_time || "—"}</td>
-                    <td><Badge value={apt.status} colorMap={STATUS_COLOR} /></td>
-                    <td><Badge value={apt.confirmation_status} colorMap={CONFIRMATION_COLOR} /></td>
-                    <td>{apt.clinic || "—"}</td>
+              <tbody className="divide-y divide-gray-100">
+                {sortedAppointments.map((apt) => (
+                  <tr key={apt._id} className="hover:bg-gray-50/70 transition-colors">
+                    <td className={`${tdCls} font-medium text-gray-900`}>{apt.appointment_id || "—"}</td>
+                    <td className={tdCls}>{apt.patient_id || "—"}</td>
+                    <td className={tdCls}>{apt.doctor_name || "—"}</td>
+                    <td className={tdCls}>{apt.department || "—"}</td>
+                    <td className={`${tdCls} whitespace-normal`}>{apt.procedure || "—"}</td>
+                    <td className={tdCls}>{apt.appointment_date || "—"}</td>
+                    <td className={tdCls}>{apt.appointment_time || "—"}</td>
+                    <td className={tdCls}><Badge value={apt.status} colorMap={STATUS_COLOR} /></td>
+                    <td className={tdCls}><Badge value={apt.confirmation_status} colorMap={CONFIRMATION_COLOR} /></td>
+                    <td className={tdCls}>{apt.clinic || "—"}</td>
                   </tr>
                 ))}
               </tbody>
