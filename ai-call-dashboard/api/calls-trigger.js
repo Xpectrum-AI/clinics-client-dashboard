@@ -22,10 +22,12 @@ export default async (req) => {
     }
 
     try {
-      const wf = await fetch("https://cloud-v2.xpectrum.co/v1/workflows/run", {
+      // DEV deployment (temporary — initial-message-delay feature is dev-only).
+      // PROD was: https://cloud-v2.xpectrum.co/v1/workflows/run  Bearer app-fhQQpFmSwQtmwzwKIVf7PS2s
+      const wf = await fetch("https://apps-v2-dev.xpectrum-ai.com/v1/workflows/run", {
         method: "POST",
         headers: {
-          Authorization: "Bearer app-fhQQpFmSwQtmwzwKIVf7PS2s",
+          Authorization: "Bearer app-uoqXFIngTqy4zmRRhSJ5mtD5",
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
