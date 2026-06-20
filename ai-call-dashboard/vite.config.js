@@ -12,7 +12,15 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      "/api": "http://localhost:3100",
+      // The trigger handler blocks until the Dify workflow responds (can take
+      // several seconds, more while the CALL node retries). Give the proxy a
+      // generous timeout so it doesn't return a misleading 502 mid-run.
+      "/api": {
+        target: "http://localhost:3100",
+        changeOrigin: true,
+        timeout: 120000,
+        proxyTimeout: 120000,
+      },
     },
   },
 })
