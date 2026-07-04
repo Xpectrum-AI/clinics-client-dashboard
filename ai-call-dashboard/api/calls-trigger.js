@@ -13,6 +13,16 @@ export default async (req) => {
 
     const db = await getDb()
     const now = new Date().toISOString()
+
+    // Fetch the call so we can pass type + purpose to the workflow.
+    // This ensures the workflow uses the call's own type (e.g. "no_show") to
+    // pick its script, rather than the patient's derived status (e.g. "lapsed"),
+    // which can be the same value for multiple distinct call types.
+    const call = await db.collection("calls").findOne({ call_id })
+    if (!call) {
+      return Response.json({ error: "Call not found" }, { status: 404 })
+    }
+
     const result = await db.collection("calls").updateOne(
       { call_id },
       { $set: { status: "pending", next_run_at: now, updated_at: now } }
@@ -22,16 +32,20 @@ export default async (req) => {
     }
 
     try {
-      // DEV deployment (temporary — initial-message-delay feature is dev-only).
-      // PROD was: https://cloud-v2.xpectrum.co/v1/workflows/run  Bearer app-fhQQpFmSwQtmwzwKIVf7PS2s
-      const wf = await fetch("https://apps-v2-dev.xpectrum-ai.com/v1/workflows/run", {
+      const wf = await fetch("https://cloud-v2.xpectrum.co/v1/workflows/run", {
         method: "POST",
         headers: {
-          Authorization: "Bearer app-uoqXFIngTqy4zmRRhSJ5mtD5",
+          Authorization: "Bearer app-iNKNUNpllVizAotA3Y6W8rBm",
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          inputs: { call_id },
+          inputs: {
+            call_id,
+            call_type: call.type,       // e.g. "no_show" — use this to pick the script
+            call_purpose: call.purpose, // e.g. "Missed Appointment Follow-Up"
+            patient_id: call.patient_id,
+            appointment_id: call.appointment_id,
+          },
           response_mode: "streaming",
           user: "abc-123",
         }),
