@@ -35,7 +35,7 @@ export default async (req) => {
       const wf = await fetch("https://cloud-v2.xpectrum.co/v1/workflows/run", {
         method: "POST",
         headers: {
-          Authorization: "Bearer app-iNKNUNpllVizAotA3Y6W8rBm",
+          Authorization: "Bearer app-Hbjiq4hIqCLGmnYeFKb4z4bZ",
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
