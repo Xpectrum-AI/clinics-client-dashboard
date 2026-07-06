@@ -1,6 +1,6 @@
 import { getDb } from "./_lib/mongo.js"
 
-export default async (req) => {
+export default async (req, context) => {
   if (req.method !== "POST") {
     return Response.json({ error: "Method not allowed" }, { status: 405 })
   }
@@ -31,8 +31,11 @@ export default async (req) => {
       return Response.json({ error: "Call not found" }, { status: 404 })
     }
 
-    try {
-      const wf = await fetch("https://cloud-v2.xpectrum.co/v1/workflows/run", {
+    // The workflow call can take a long time to respond, well past the
+    // function's own execution limit. Don't block the response on it —
+    // let it keep running in the background via waitUntil.
+    context.waitUntil(
+      fetch("https://cloud.xpectrum.co/v1/workflows/run", {
         method: "POST",
         headers: {
           Authorization: "Bearer app-Hbjiq4hIqCLGmnYeFKb4z4bZ",
@@ -50,12 +53,15 @@ export default async (req) => {
           user: "abc-123",
         }),
       })
-      if (!wf.ok) {
-        console.error("[api/calls/trigger] workflow failed:", await wf.text())
-      }
-    } catch (e) {
-      console.error("[api/calls/trigger] workflow error:", e)
-    }
+        .then(async (wf) => {
+          if (!wf.ok) {
+            console.error("[api/calls/trigger] workflow failed:", await wf.text())
+          }
+        })
+        .catch((e) => {
+          console.error("[api/calls/trigger] workflow error:", e)
+        })
+    )
 
     return Response.json({ success: true, message: "Call triggered", call_id })
   } catch (err) {
