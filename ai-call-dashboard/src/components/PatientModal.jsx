@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { useData } from "../context/DataContext"
 
 const EMPTY = {
   first_name: "",
@@ -30,6 +31,7 @@ function fromPatient(p) {
 }
 
 export default function PatientModal({ open, onClose, onSaved, patient }) {
+  const { fetchPatients } = useData()
   const isEdit = Boolean(patient)
   const [form, setForm] = useState(EMPTY)
   const [submitting, setSubmitting] = useState(false)
@@ -76,6 +78,7 @@ export default function PatientModal({ open, onClose, onSaved, patient }) {
         const data = await res.json().catch(() => ({}))
         throw new Error(data.error || `HTTP ${res.status}`)
       }
+      await fetchPatients()
       onSaved?.()
       onClose()
     } catch (err) {
