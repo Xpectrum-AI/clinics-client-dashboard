@@ -35,7 +35,7 @@ export default function Topbar({ search, setSearch, onMenuClick }) {
       <PatientModal
         open={open}
         onClose={() => setOpen(false)}
-        onSaved={() => window.location.reload()}
+        onSaved={() => {}}
       />
 
     </div>

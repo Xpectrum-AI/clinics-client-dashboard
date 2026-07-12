@@ -76,7 +76,7 @@ export default function PatientTable({ patients = [] }) {
         open={Boolean(editing)}
         patient={editing}
         onClose={() => setEditing(null)}
-        onSaved={() => window.location.reload()}
+        onSaved={() => {}}
       />
     </>
   )
