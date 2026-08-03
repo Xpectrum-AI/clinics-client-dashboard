@@ -35,7 +35,7 @@ export default async (req, context) => {
     // function's own execution limit. Don't block the response on it —
     // let it keep running in the background via waitUntil.
     context.waitUntil(
-      fetch("https://cloud.xpectrum.co/v1/workflows/run", {
+      fetch("https://cloud.xpectrum.dev/v1/workflows/run", {
         method: "POST",
         headers: {
           Authorization: "Bearer app-Hbjiq4hIqCLGmnYeFKb4z4bZ",
